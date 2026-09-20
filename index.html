@@ -1,0 +1,1351 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Train Game</title>
+  <style>
+    :root {
+      --bg: #090b18;
+      --panel: #12162b;
+      --panel2: #191f3d;
+      --line: #293158;
+      --text: #f4f5ff;
+      --muted: #99a2c5;
+      --purple: #8568ff;
+      --blue: #4db8ff;
+      --green: #35d58a;
+      --red: #ff5f7a;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 15% 0%, #202052 0, transparent 35%),
+                  radial-gradient(circle at 90% 15%, #122e51 0, transparent 30%),
+                  var(--bg);
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px max(18px, calc((100% - 1120px) / 2));
+      background: rgba(9,11,24,.88);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo { font-size: 22px; font-weight: 900; letter-spacing: -.6px; }
+    .logo span { color: var(--blue); }
+    .score-box {
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      font-weight: 700;
+    }
+
+    .container { width: min(1120px, 92%); margin: 0 auto; }
+    .hero { text-align: center; padding: 54px 10px 28px; }
+    .hero h1 { margin: 0 0 10px; font-size: clamp(36px, 6vw, 64px); letter-spacing: -2px; }
+    .hero h1 span { color: var(--blue); }
+    .hero p { margin: 0; color: var(--muted); font-size: 17px; }
+
+    .ad {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 22px 0;
+      color: #697398;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      border: 1px dashed #3a4269;
+      border-radius: 14px;
+      background: rgba(18,22,43,.65);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .stat {
+      padding: 20px 12px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(18,22,43,.86);
+    }
+    .stat-number {
+      color: var(--purple);
+      font-size: 30px;
+      font-weight: 850;
+    }
+    .stat-title {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-title { margin: 34px 0 16px; font-size: 27px; }
+    .games {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .game-card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(25,31,61,.96), rgba(15,18,37,.96));
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .game-card:hover { transform: translateY(-4px); border-color: var(--blue); }
+    .game-icon { font-size: 38px; }
+    .game-card h3 { margin: 12px 0 7px; font-size: 20px; }
+    .game-card p {
+      min-height: 44px;
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .game-level { margin-bottom: 12px; color: var(--muted); font-size: 14px; font-weight: 700; }
+    .start-btn, .primary-btn, .secondary-btn {
+      width: 100%;
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 11px;
+      color: white;
+      background: linear-gradient(100deg, var(--purple), #4b8dff);
+      font-weight: 800;
+      transition: filter .2s ease, transform .2s ease;
+    }
+    .secondary-btn {
+      background: linear-gradient(100deg, #374463, #203455);
+      margin-top: 10px;
+    }
+    .start-btn:hover, .primary-btn:hover, .secondary-btn:hover { filter: brightness(1.06); }
+
+    .back-btn {
+      margin: 16px 0 0;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(18,22,43,.8);
+      color: var(--text);
+      font-weight: 700;
+    }
+    .game-area {
+      padding: 24px 0 30px;
+      text-align: center;
+    }
+    .game-info { color: var(--muted); margin: 8px 0 18px; }
+    .big-number {
+      font-size: clamp(42px, 10vw, 94px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin: 16px 0;
+    }
+    .message {
+      color: var(--muted);
+      margin-top: 10px;
+      min-height: 24px;
+    }
+    .answer-input {
+      width: min(100%, 360px);
+      margin: 14px 0 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(18,22,43,.86);
+      color: var(--text);
+      font-size: 1.05rem;
+      text-align: center;
+    }
+
+    .word-search-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 20px;
+      align-items: start;
+      max-width: 680px;
+      margin: 24px auto;
+    }
+    .word-search-grid {
+      display: grid;
+      width: 100%;
+      border: 3px solid var(--blue);
+      background: var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .word-search-cell {
+      appearance: none;
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 1;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      font-weight: 800;
+      font-size: clamp(18px, 3.3vw, 24px);
+      transition: background .12s ease, transform .12s ease;
+      padding: 0;
+    }
+    .word-search-cell:nth-child(10n) { border-right: 0; }
+    .word-search-cell.selected {
+      background: rgba(77,184,255,.30);
+      box-shadow: inset 0 0 0 2px rgba(77,184,255,.8);
+    }
+    .word-search-cell.found {
+      background: rgba(53,213,138,.28);
+      box-shadow: inset 0 0 0 2px rgba(53,213,138,.9);
+    }
+    .word-list {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(18,22,43,.82);
+    }
+    .word-list-title {
+      color: var(--blue);
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .word-list-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+    .word-list-items li {
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: 12px;
+    }
+    .word-list-items li.found {
+      text-decoration: line-through;
+      color: var(--green);
+      background: rgba(53,213,138,.08);
+    }
+
+    @media (max-width: 680px) {
+      header { padding: 14px 4%; }
+      .logo { font-size: 19px; }
+      .score-box { padding: 8px 10px; font-size: 13px; }
+      .hero { padding-top: 38px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .games { grid-template-columns: 1fr; }
+      .mobile-hidden-game { display: none; }
+      .word-search-layout {
+        display: block;
+        width: 100%;
+      }
+      .word-search-cell {
+        font-size: clamp(18px, 5vw, 27px);
+      }
+      .word-list {
+        margin-top: 14px;
+      }
+      .word-list-items {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🧠 <span>Brain Train</span> Game</div>
+    <div class="score-box">⭐ Score: <b id="totalScore">0</b></div>
+  </header>
+
+  <main id="homeScreen">
+    <div class="container">
+      <section class="hero">
+        <h1>Train Your <span>Brain</span> 🧠</h1>
+        <p>Short challenges for sharper memory, focus, speed and logic.</p>
+      </section>
+
+      <div class="ad">ADVERTISEMENT</div>
+
+      <section class="stats">
+        <div class="stat"><div class="stat-number" id="bestScore">0</div><div class="stat-title">Best Score</div></div>
+        <div class="stat"><div class="stat-number" id="gamesPlayed">0</div><div class="stat-title">Games Played</div></div>
+        <div class="stat"><div class="stat-number" id="level">1</div><div class="stat-title">Brain Level</div></div>
+        <div class="stat"><div class="stat-number">9</div><div class="stat-title">Challenges</div></div>
+      </section>
+
+      <div class="ad">ADVERTISEMENT</div>
+      <h2 class="section-title">🎮 Brain Games</h2>
+      <section class="games" id="gamesList"></section>
+      <div class="ad">ADVERTISEMENT</div>
+    </div>
+  </main>
+
+  <main id="gameScreen" style="display:none;">
+    <div class="container">
+      <button class="back-btn" id="backButton">← Back to Games</button>
+      <section class="game-area" id="gameContent"></section>
+    </div>
+  </main>
+
+  <script>
+    const gameData = [
+      { id: "number", icon: "🔢", title: "Number Memory", description: "Remember a number before it disappears." },
+      { id: "reaction", icon: "⚡", title: "Reaction Test", description: "Wait for green, then react as quickly as you can." },
+      { id: "math", icon: "➗", title: "Quick Math", description: "Solve a quick arithmetic challenge." },
+      { id: "cards", icon: "🧩", title: "Memory Cards", description: "Find every matching emoji pair." },
+      { id: "focus", icon: "🎯", title: "Focus Test", description: "Tap the moving target as fast as you can." },
+      { id: "pattern", icon: "💡", title: "Pattern Memory", description: "Repeat the highlighted cell pattern." },
+      { id: "word", icon: "🔤", title: "Word Memory", description: "Remember the word, then type it back." },
+      { id: "chess", icon: "♟️", title: "Chess vs Bot", description: "Play white against a browser bot." },
+      { id: "sudoku", icon: "🔢", title: "Sudoku", description: "Complete the 9x9 number grid." }
+    ];
+
+    const state = {
+      total: Number(localStorage.getItem("brainScore") || 0),
+      best: Number(localStorage.getItem("brainBest") || 0),
+      played: Number(localStorage.getItem("brainGames") || 0),
+      levels: Object.fromEntries(gameData.map(game => [game.id, 1]))
+    };
+
+    let currentGame = "";
+    let timers = [];
+    const $ = id => document.getElementById(id);
+    const later = (fn, ms) => {
+      const timer = setTimeout(fn, ms);
+      timers.push(timer);
+      return timer;
+    };
+
+    function clearTimers() {
+      timers.forEach(clearTimeout);
+      timers = [];
+    }
+
+    function saveStats() {
+      localStorage.setItem("brainScore", state.total);
+      localStorage.setItem("brainBest", state.best);
+      localStorage.setItem("brainGames", state.played);
+      localStorage.setItem("brainGameLevels", JSON.stringify(state.levels));
+
+      $("totalScore").textContent = state.total;
+      $("bestScore").textContent = state.best;
+      $("gamesPlayed").textContent = state.played;
+      $("level").textContent = Math.min(100, Math.floor(state.played / 3) + 1);
+    }
+
+    function getLevel(gameId = currentGame) {
+      return Math.max(1, Math.min(100, state.levels[gameId] || 1));
+    }
+
+    function renderGames() {
+      $("gamesList").innerHTML = gameData.map(game => `
+        <article class="game-card">
+          <div class="game-icon">${game.icon}</div>
+          <h3>${game.title}</h3>
+          <p>${game.description}</p>
+          <div class="game-level">Level ${getLevel(game.id)} / 100</div>
+          <button class="start-btn" data-game="${game.id}">▶ Start Game</button>
+        </article>
+      `).join("");
+
+      document.querySelectorAll("[data-game]").forEach(button => {
+        button.addEventListener("click", () => openGame(button.dataset.game));
+      });
+    }
+
+    function gameHeader(icon, title, info) {
+      return `<h2>${icon} ${title}</h2><p class="game-info">Level ${getLevel()} / 100 · ${info}</p>`;
+    }
+
+    function openGame(gameId) {
+      clearTimers();
+      currentGame = gameId;
+      $("homeScreen").style.display = "none";
+      $("gameScreen").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "instant" });
+
+      const games = {
+        number: startNumber,
+        reaction: startReaction,
+        math: startMath,
+        cards: startCards,
+        focus: startFocus,
+        pattern: startPattern,
+        word: startWord,
+        chess: startChess,
+        sudoku: startSudoku
+      };
+
+      const start = games[gameId];
+      if (start) start();
+    }
+
+    function goHome() {
+      clearTimers();
+      $("gameScreen").style.display = "none";
+      $("homeScreen").style.display = "block";
+      saveStats();
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function finishGame(name, score, message, won = true) {
+      clearTimers();
+      state.total += score;
+      state.played += 1;
+      state.best = Math.max(state.best, score);
+      if (won) state.levels[currentGame] = Math.min(100, getLevel(currentGame) + 1);
+      saveStats();
+      renderGames();
+
+      $("gameContent").innerHTML = `
+        <h2>${won ? "🎉" : "💡"} ${name} ${won ? "Complete!" : "Game Over"}</h2>
+        <div class="big-number">+${score}</div>
+        <div class="game-info">${message}<br><b>${won ? "Next Level" : "Replay Level"}: ${getLevel(currentGame)}</b>${won ? "<br>Starting the next level..." : ""}</div>
+        <button class="primary-btn" id="againButton">🔄 ${won ? "Play Again" : "Replay"} · Level ${getLevel(currentGame)}</button>
+        <button class="secondary-btn" id="allGamesButton">🏠 All Games</button>
+      `;
+
+      $("againButton").onclick = () => openGame(currentGame);
+      $("allGamesButton").onclick = goHome;
+      if (won) later(() => openGame(currentGame), 1200);
+    }
+
+    function startNumber() {
+      const level = getLevel();
+      const digits = Math.min(9, 4 + Math.floor((level - 1) / 15));
+      const number = String(Math.floor(10 ** (digits - 1) + Math.random() * (10 ** digits - 10 ** (digits - 1))));
+      const displayTime = Math.max(850, 2600 - level * 18);
+
+      $("gameContent").innerHTML = gameHeader("🔢", "Number Memory", `Remember this ${digits}-digit number.`) +
+        `<div class="big-number">${number}</div><div class="message">Focus... ${displayTime / 1000}s</div>`;
+
+      later(() => {
+        $("gameContent").innerHTML = gameHeader("🔢", "Number Memory", "Type the number you remember.") +
+          `<input class="answer-input" id="numberAnswer" inputmode="numeric" maxlength="${digits}" placeholder="Enter number"><br><button class="primary-btn" id="numberCheck">Check Answer</button>`;
+
+        $("numberCheck").onclick = () => {
+          const answer = $("numberAnswer").value;
+          const correct = answer === number;
+          finishGame("Number Memory", correct ? 100 + level : 20, correct ? "Perfect recall!" : `The number was <b>${number}</b>.`, correct);
+        };
+        $("numberAnswer").focus();
+      }, displayTime);
+    }
+
+    function startReaction() {
+      const level = getLevel();
+      const wait = Math.max(500, 4500 - level * 35);
+
+      $("gameContent").innerHTML = gameHeader("⚡", "Reaction Test", "Wait for green, then click the box.") +
+        `<div id="reactionBox" style="width:min(100%,420px);height:220px;border-radius:18px;background:#1c243f;border:2px solid var(--line);margin:20px auto;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;">WAIT...</div>
+         <div id="reactionMessage" class="message">Do not click early.</div>`;
+
+      $("reactionBox").onclick = function reactionClick() {
+        const box = $("reactionBox");
+        if (!box.dataset.started) {
+          box.style.background = "#4a1d2f";
+          $("reactionMessage").textContent = "Too early! Wait for green, then try again.";
+          return;
+        }
+        const ms = Date.now() - Number(box.dataset.started);
+        const score = Math.max(20, Math.min(150, Math.round(150 - ms / 5)));
+        finishGame("Reaction Test", score, `Your reaction time was <b>${ms} ms</b>.`);
+      };
+
+      later(() => {
+        const box = $("reactionBox");
+        if (!box) return;
+        box.style.background = "#173f2a";
+        box.textContent = "CLICK NOW!";
+        box.dataset.started = Date.now();
+      }, wait);
+    }
+
+    function startMath() {
+      const level = getLevel();
+      const max = 20 + level * 2;
+      const a = Math.floor(5 + Math.random() * max);
+      const b = Math.floor(2 + Math.random() * (10 + level));
+      const operations = level > 35 ? ["+", "-", "×"] : ["+", "-"];
+      const op = operations[Math.floor(Math.random() * operations.length)];
+      const answer = op === "+" ? a + b : op === "-" ? a - b : a * b;
+      const options = [answer, answer + 2 + level, answer - 3 - level, answer + 5 + level].sort(() => Math.random() - 0.5);
+
+      $("gameContent").innerHTML = gameHeader("➗", "Quick Math", "Choose the correct answer.") +
+        `<div class="big-number" style="font-size:clamp(32px,7vw,64px);">${a} ${op} ${b} = ?</div>
+         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:380px;margin:20px auto;">${options.map(value => `<button class="primary-btn" data-answer="${value}" style="width:100%;margin:0;">${value}</button>`).join("")}</div>
+         <div class="message">Think fast! ⚡</div>`;
+
+      document.querySelectorAll("[data-answer]").forEach(button => {
+        button.onclick = () => {
+          const correct = Number(button.dataset.answer) === answer;
+          finishGame("Quick Math", correct ? 100 + level : 20, correct ? "Correct answer!" : `The correct answer was <b>${answer}</b>.`, correct);
+        };
+      });
+    }
+
+    function startCards() {
+      const pairCount = 20;
+      const symbols = ["🍎","🍌","🍇","🍊","🍉","🥝","🍓","🍒","🍍","🥭","🍑","🍐","🥥","🍋","🍈","🫐","🍏","🍅","🌽","🥕"];
+      const deck = [...symbols.slice(0, pairCount), ...symbols.slice(0, pairCount)].sort(() => Math.random() - 0.5);
+
+      const cardState = { deck, flipped: [], matched: [], moves: 0, locked: false };
+      window.cardState = cardState;
+
+      $("gameContent").innerHTML = gameHeader("🧩", "Memory Cards", `Find all ${pairCount} matching fruit pairs · ${deck.length} cards.`) +
+        `<div id="moves" style="margin-bottom:12px;">Moves: 0</div>
+         <div style="display:grid;grid-template-columns:repeat(${Math.min(4, pairCount)},minmax(54px,1fr));gap:10px;max-width:440px;margin:0 auto;">${deck.map((symbol, index) => `<button class="memory-card" data-card="${index}" style="min-height:64px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:clamp(26px,5vw,38px);">?</button>`).join("")}</div>
+         <div class="message">Choose two cards.</div>`;
+
+      document.querySelectorAll("[data-card]").forEach(button => {
+        button.addEventListener("click", () => flipMemoryCard(Number(button.dataset.card), cardState));
+      });
+    }
+
+    function flipMemoryCard(index, cardState) {
+      const button = document.querySelector(`[data-card="${index}"]`);
+      if (!button || cardState.locked || cardState.flipped.includes(index) || cardState.matched.includes(index)) return;
+
+      button.textContent = cardState.deck[index];
+      button.classList.add("flipped");
+      cardState.flipped.push(index);
+
+      if (cardState.flipped.length < 2) return;
+
+      cardState.moves += 1;
+      $("moves").textContent = `Moves: ${cardState.moves}`;
+      const [first, second] = cardState.flipped;
+
+      if (cardState.deck[first] === cardState.deck[second]) {
+        cardState.matched.push(first, second);
+        cardState.flipped = [];
+        button.classList.add("matched");
+        document.querySelector(`[data-card="${first}"]`).classList.add("matched");
+
+        if (cardState.matched.length === cardState.deck.length) {
+          finishGame("Memory Cards", Math.max(30, 180 - cardState.moves * 5), `All pairs found in <b>${cardState.moves} moves</b>.`);
+        }
+      } else {
+        cardState.locked = true;
+        later(() => {
+          [first, second].forEach(cardIndex => {
+            const item = document.querySelector(`[data-card="${cardIndex}"]`);
+            if (item) {
+              item.textContent = "?";
+              item.classList.remove("flipped");
+            }
+          });
+          cardState.flipped = [];
+          cardState.locked = false;
+        }, 700);
+      }
+    }
+
+    function startFocus() {
+      const level = getLevel();
+      const targetSize = Math.max(32, 64 - level * 0.32);
+
+      $("gameContent").innerHTML = gameHeader("🎯", "Focus Test", "A target will appear. Click it quickly.") +
+        `<div style="position:relative;height:260px;border:1px solid var(--line);border-radius:18px;background:rgba(18,22,43,.5);overflow:hidden;margin:20px auto;max-width:520px;">
+          <button id="focusTarget" aria-label="Target" hidden style="position:absolute;border:none;border-radius:50%;background:radial-gradient(circle,#ffed95,#ff9d5c);box-shadow:0 0 25px rgba(255,157,92,.8);"></button>
+        </div>
+        <div id="focusMessage" class="message">Get ready...</div>`;
+
+      later(() => {
+        const target = $("focusTarget");
+        if (!target) return;
+        target.hidden = false;
+        target.style.width = `${targetSize}px`;
+        target.style.height = `${targetSize}px`;
+        target.style.left = `${15 + Math.random() * 65}%`;
+        target.style.top = `${15 + Math.random() * 60}%`;
+
+        const started = Date.now();
+        target.onclick = () => {
+          const ms = Date.now() - started;
+          finishGame("Focus Test", Math.max(30, 120 + level - Math.round(ms / 10)), `Target found in <b>${ms} ms</b>.`);
+        };
+      }, Math.max(260, 900 - level * 6));
+    }
+
+    function startPattern() {
+      const level = getLevel();
+      const gridSize = level >= 15 ? 5 : 4;
+      const totalCells = gridSize * gridSize;
+      const count = Math.min(gridSize === 5 ? 12 : 8, 2 + Math.floor((level - 1) / 6));
+      const cells = Array.from({ length: totalCells }, (_, index) => index);
+      const pattern = [...cells].sort(() => Math.random() - 0.5).slice(0, count);
+      const showTime = Math.max(800, 2300 - level * 16);
+
+      $("gameContent").innerHTML = gameHeader("💡", "Pattern Memory", `Remember ${count} highlighted cells in the ${gridSize}×${gridSize} grid.`) +
+        `<div style="display:grid;grid-template-columns:repeat(${gridSize},minmax(0,1fr));gap:8px;max-width:${gridSize * 62}px;margin:20px auto;">${cells.map(index => `<button class="pattern-cell" data-pattern="${index}" style="aspect-ratio:1;border:1px solid var(--line);border-radius:8px;background:var(--panel);width:100%;"></button>`).join("")}</div>
+         <div id="patternMessage" class="message">Watch carefully... ${showTime / 1000}s</div>`;
+
+      pattern.forEach(index => {
+        const cell = document.querySelector(`[data-pattern="${index}"]`);
+        if (cell) cell.style.background = "#2a4e66";
+      });
+
+      later(() => {
+        document.querySelectorAll("[data-pattern]").forEach(cell => cell.style.background = "var(--panel)");
+        $("patternMessage").textContent = `Select ${count} cells · 0/${count}`;
+
+        const selected = [];
+        document.querySelectorAll("[data-pattern]").forEach(cell => {
+          cell.onclick = () => {
+            const index = Number(cell.dataset.pattern);
+            if (selected.includes(index)) return;
+            selected.push(index);
+            cell.style.background = "#325a82";
+            $("patternMessage").textContent = `Select ${count} cells · ${selected.length}/${count}`;
+
+            if (selected.length === count) {
+              const correct = selected.every(index => pattern.includes(index)) && pattern.every(index => selected.includes(index));
+              finishGame("Pattern Memory", correct ? 120 + level * 2 : 20, correct ? "Excellent pattern recall!" : "That pattern was not quite right.", correct);
+            }
+          };
+        });
+      }, showTime);
+    }
+
+    let wordMemoryQueue = [];
+    function startWord() {
+      const level = getLevel();
+      const words = ["galaxy", "puzzle", "rocket", "sunshine", "journey", "rainbow", "volcano", "butterfly", "constellation", "adventure", "imagination", "discovery"];
+      const available = words.filter(word => word.length >= Math.min(5, 4 + Math.floor(level / 25)));
+
+      if (!wordMemoryQueue.length || wordMemoryQueue.some(word => !available.includes(word))) {
+        wordMemoryQueue = [...available].sort(() => Math.random() - 0.5);
+      }
+
+      const word = wordMemoryQueue.shift() || available[0] || words[0];
+      const displayTime = Math.max(850, 2200 - level * 14);
+
+      $("gameContent").innerHTML = gameHeader("🔤", "Word Memory", "Remember this word. Words do not repeat until the list is complete.") +
+        `<div class="big-number" style="font-size:clamp(36px,9vw,72px);">${word}</div><div class="message">It disappears in ${displayTime / 1000}s...</div>`;
+
+      later(() => {
+        $("gameContent").innerHTML = gameHeader("🔤", "Word Memory", "Type the word you remember.") +
+          `<input class="answer-input" id="wordAnswer" autocomplete="off" placeholder="Enter word"><br><button class="primary-btn" id="wordCheck">Check Answer</button>`;
+
+        const checkWord = () => {
+          const entered = $("wordAnswer").value.trim().toLowerCase();
+          const correct = entered === word.toLowerCase();
+          finishGame("Word Memory", correct ? 100 + level : 0, correct ? "✅ Correct! Great memory." : `❌ Incorrect. The word was <b>${word}</b>.`, correct);
+        };
+
+        $("wordCheck").onclick = checkWord;
+        $("wordAnswer").onkeydown = (event) => {
+          if (event.key === "Enter") checkWord();
+        };
+        $("wordAnswer").focus();
+      }, displayTime);
+    }
+
+    const wordSearchPool = [
+      "planet", "rocket", "orbit", "galaxy", "comet", "signal", "beacon", "light", "forest",
+      "aurora", "dream", "spark", "travel", "stone", "cabin", "zebra", "ocean", "cloud",
+      "jungle", "wave", "whale", "trail", "breeze", "river", "summit", "pixel"
+    ];
+
+    const wordSearchState = {
+      size: 8,
+      board: [],
+      words: [],
+      found: [],
+      selection: [],
+      dragging: false,
+      startIndex: null
+    };
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function getWordSearchPath(startIndex, endIndex, size) {
+      const startRow = Math.floor(startIndex / size);
+      const startCol = startIndex % size;
+      const endRow = Math.floor(endIndex / size);
+      const endCol = endIndex % size;
+
+      const rowDelta = endRow - startRow;
+      const colDelta = endCol - startCol;
+      const rowStep = Math.sign(rowDelta);
+      const colStep = Math.sign(colDelta);
+      const distance = Math.max(Math.abs(rowDelta), Math.abs(colDelta));
+
+      if (rowDelta === 0 && colDelta === 0) return [startIndex];
+      if (rowDelta === 0 || colDelta === 0 || Math.abs(rowDelta) === Math.abs(colDelta)) {
+        const path = [];
+        for (let step = 0; step <= distance; step += 1) {
+          path.push((startRow + rowStep * step) * size + (startCol + colStep * step));
+        }
+        return path;
+      }
+      return [];
+    }
+
+    function renderWordSearchList() {
+      const list = document.querySelector(".word-list-items");
+      if (!list) return;
+
+      list.innerHTML = wordSearchState.words.map(item => `
+        <li class="${wordSearchState.found.includes(item.word) ? "found" : ""}">${item.word}</li>
+      `).join("");
+    }
+
+    function markWordSearchSelection() {
+      const cells = [...document.querySelectorAll(".word-search-cell")];
+      cells.forEach(cell => cell.classList.remove("selected", "found"));
+
+      wordSearchState.selection.forEach(index => {
+        if (cells[index]) cells[index].classList.add("selected");
+      });
+
+      wordSearchState.found.forEach(foundWord => {
+        const item = wordSearchState.words.find(entry => entry.word === foundWord);
+        if (!item) return;
+        item.positions.forEach(index => {
+          if (cells[index]) cells[index].classList.add("found");
+        });
+      });
+
+      renderWordSearchList();
+    }
+
+    function generateWordSearch(level) {
+      const size = level >= 25 ? 10 : 8;
+      const count = Math.min(5, Math.max(3, 3 + Math.floor(level / 20)));
+      const selectedWords = shuffleArray(wordSearchPool).slice(0, count);
+      const board = Array(size * size).fill("");
+      const placedWords = [];
+      const directions = [
+        [1, 0], [-1, 0], [0, 1], [0, -1],
+        [1, 1], [1, -1], [-1, 1], [-1, -1]
+      ];
+
+      for (const word of selectedWords) {
+        const upperWord = word.toUpperCase();
+        let placed = false;
+
+        for (const [dr, dc] of shuffleArray(directions)) {
+          for (let tries = 0; tries < 250; tries += 1) {
+            const row = Math.floor(Math.random() * size);
+            const col = Math.floor(Math.random() * size);
+            const positions = [];
+            let valid = true;
+
+            for (let i = 0; i < upperWord.length; i += 1) {
+              const r = row + dr * i;
+              const c = col + dc * i;
+              if (r < 0 || c < 0 || r >= size || c >= size) {
+                valid = false;
+                break;
+              }
+              const index = r * size + c;
+              if (board[index] && board[index] !== upperWord[i]) {
+                valid = false;
+                break;
+              }
+              positions.push(index);
+            }
+
+            if (!valid) continue;
+
+            positions.forEach((index, i) => {
+              board[index] = upperWord[i];
+            });
+
+            placedWords.push({ word: upperWord, positions });
+            placed = true;
+            break;
+          }
+          if (placed) break;
+        }
+      }
+
+      for (let i = 0; i < board.length; i += 1) {
+        if (!board[i]) {
+          board[i] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        }
+      }
+
+      return { size, board, words: placedWords };
+    }
+
+    function checkWordSearchSelection() {
+      const selection = wordSearchState.selection;
+      if (!selection.length) return;
+
+      const match = wordSearchState.words.find(item => {
+        if (selection.length !== item.positions.length) return false;
+        const straight = item.positions.every((pos, index) => pos === selection[index]);
+        const reversed = item.positions.slice().reverse().every((pos, index) => pos === selection[index]);
+        return straight || reversed;
+      });
+
+      if (match) {
+        if (!wordSearchState.found.includes(match.word)) {
+          wordSearchState.found.push(match.word);
+          const status = $("wordSearchStatus");
+          if (status) status.textContent = `Nice! You found ${match.word}.`;
+
+          if (wordSearchState.found.length === wordSearchState.words.length) {
+            finishGame("Word Search", Math.max(80, 140 + getLevel() * 2), "You found every hidden word in the puzzle.");
+          }
+        }
+      } else {
+        const status = $("wordSearchStatus");
+        if (status) status.textContent = "Not a word yet — keep searching.";
+      }
+
+      wordSearchState.selection = [];
+      markWordSearchSelection();
+    }
+
+    function startWordSearch() {
+      const level = getLevel();
+      const generated = generateWordSearch(level);
+      wordSearchState.size = generated.size;
+      wordSearchState.board = generated.board;
+      wordSearchState.words = generated.words;
+      wordSearchState.found = [];
+      wordSearchState.selection = [];
+      wordSearchState.dragging = false;
+      wordSearchState.startIndex = null;
+
+      $("gameContent").innerHTML = gameHeader("🔎", "Word Search", "Find all hidden words in the puzzle.") +
+        `<div class="word-search-layout">
+          <div class="word-search-grid" style="grid-template-columns:repeat(${generated.size},minmax(0,1fr));">
+            ${generated.board.map((letter, index) => `<button type="button" class="word-search-cell" data-index="${index}" aria-label="Letter ${letter}">${letter}</button>`).join("")}
+          </div>
+          <div class="word-list">
+            <div class="word-list-title">Words</div>
+            <ul class="word-list-items"></ul>
+          </div>
+        </div>
+        <div class="message" id="wordSearchStatus">Drag across letters to select a word.</div>`;
+
+      renderWordSearchList();
+      markWordSearchSelection();
+
+      const cells = [...document.querySelectorAll(".word-search-cell")];
+
+      const beginSelection = (index) => {
+        wordSearchState.dragging = true;
+        wordSearchState.startIndex = index;
+        wordSearchState.selection = [index];
+        markWordSearchSelection();
+      };
+
+      const updateSelection = (index) => {
+        if (!wordSearchState.dragging || wordSearchState.startIndex === null) return;
+        const path = getWordSearchPath(wordSearchState.startIndex, index, generated.size);
+        if (path.length) {
+          wordSearchState.selection = path;
+          markWordSearchSelection();
+        }
+      };
+
+      const endSelection = () => {
+        if (!wordSearchState.dragging) return;
+        wordSearchState.dragging = false;
+        const start = wordSearchState.startIndex;
+        wordSearchState.startIndex = null;
+        if (start !== null && wordSearchState.selection.length) {
+          checkWordSearchSelection();
+        }
+      };
+
+      cells.forEach(cell => {
+        const index = Number(cell.dataset.index);
+        cell.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          beginSelection(index);
+        });
+        cell.addEventListener("pointerenter", () => updateSelection(index));
+        cell.addEventListener("pointermove", () => updateSelection(index));
+        cell.addEventListener("pointerup", endSelection);
+        cell.addEventListener("click", () => {
+          if (!wordSearchState.dragging) {
+            beginSelection(index);
+            endSelection();
+          }
+        });
+      });
+
+      document.addEventListener("pointermove", (event) => {
+        const element = document.elementFromPoint(event.clientX, event.clientY);
+        const cell = element && element.closest(".word-search-cell");
+        if (cell && wordSearchState.dragging) {
+          updateSelection(Number(cell.dataset.index));
+        }
+      });
+      document.addEventListener("pointerup", endSelection, { once: false });
+    }
+
+    function startSudoku() {
+      $("gameContent").innerHTML = gameHeader("🔢", "Sudoku", "Read the rules before you begin.") +
+        `<div style="max-width:620px;margin:24px auto;text-align:left;padding:24px;border:1px solid var(--line);border-radius:16px;background:rgba(25,31,61,.72);">
+          <h3>How to play</h3>
+          <ul>
+            <li>Fill every empty square with a number from 1 to 9.</li>
+            <li>Each row, column and 3×3 box must contain each number once.</li>
+            <li>Complete the grid and check your solution.</li>
+          </ul>
+        </div>
+        <button class="primary-btn" id="startSudokuButton">▶ Start Sudoku</button>`;
+
+      $("startSudokuButton").onclick = () => {
+        const base = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        const digits = [...base].sort(() => Math.random() - 0.5);
+        const solution = [];
+
+        for (let row = 0; row < 9; row += 1) {
+          for (let col = 0; col < 9; col += 1) {
+            const shift = Math.floor(row % 3) * 3 + Math.floor(row / 3);
+            solution.push(digits[(shift + col) % 9] + 1);
+          }
+        }
+
+        const givens = solution.map(() => 0);
+        const clueCount = 32;
+        for (let row = 0; row < 9; row += 1) {
+          const positions = shuffleArray([...base]).slice(0, clueCount / 9);
+          positions.forEach(col => {
+            givens[row * 9 + col] = solution[row * 9 + col];
+          });
+        }
+        let chancesRemaining = 5;
+
+        const board = givens.map((value, index) => {
+          const row = Math.floor(index / 9);
+          const col = index % 9;
+          const rightDivider = col === 2 || col === 5 ? "border-right:3px solid #090b18;" : "";
+          const bottomDivider = row === 2 || row === 5 ? "border-bottom:3px solid #090b18;" : "";
+          return `
+          <input class="sudoku-cell" data-sudoku="${index}" maxlength="1" inputmode="numeric" pattern="[1-9]" value="${value || ""}" ${value ? "disabled" : ""} style="width:100%;aspect-ratio:1;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);${rightDivider}${bottomDivider}background:var(--panel);color:var(--text);text-align:center;font-size:clamp(16px,4vw,27px);font-weight:700;">
+        `;
+        }).join("");
+
+        $("gameContent").innerHTML = gameHeader("🔢", "Sudoku", "Fill the grid. Incorrect numbers turn red.") +
+          `<div style="display:grid;grid-template-columns:repeat(9,minmax(0,1fr));width:min(100%,540px);margin:24px auto;border:4px solid #090b18;background:var(--line);">${board}</div>
+           <div class="message" id="sudokuStatus">Enter a number in each empty square. Chances: ${chancesRemaining}</div>`;
+
+        document.querySelectorAll("[data-sudoku]").forEach(cell => {
+          cell.oninput = () => {
+            cell.value = cell.value.replace(/[^1-9]/g, "").slice(0, 1);
+            const index = Number(cell.dataset.sudoku);
+            const isWrong = cell.value && Number(cell.value) !== solution[index];
+            cell.style.background = isWrong ? "rgba(255,95,122,.28)" : "var(--panel)";
+            cell.style.color = isWrong ? "var(--red)" : "var(--text)";
+            cell.setAttribute("aria-invalid", isWrong ? "true" : "false");
+
+            if (isWrong) {
+              if (cell.dataset.lastWrongValue !== cell.value) {
+                chancesRemaining -= 1;
+                cell.dataset.lastWrongValue = cell.value;
+              }
+              $("sudokuStatus").textContent = `Wrong number: try again. Chances: ${chancesRemaining}`;
+              if (chancesRemaining <= 0) {
+                document.querySelectorAll("[data-sudoku]:not(:disabled)").forEach(item => item.disabled = true);
+                finishGame("Sudoku", 0, "You used all 5 chances. Try the puzzle again.", false);
+                return;
+              }
+            } else if (cell.value) {
+              delete cell.dataset.lastWrongValue;
+              $("sudokuStatus").textContent = `Correct number. Chances: ${chancesRemaining}`;
+            } else {
+              delete cell.dataset.lastWrongValue;
+              $("sudokuStatus").textContent = `Enter a number in each empty square. Chances: ${chancesRemaining}`;
+            }
+
+            const cells = [...document.querySelectorAll("[data-sudoku]")];
+            const complete = cells.every((item, itemIndex) => Number(item.value) === solution[itemIndex]);
+            if (complete) {
+              finishGame("Sudoku", 120 + getLevel() * 2, "Perfect solution! You completed the puzzle.");
+            }
+          };
+        });
+      };
+    }
+
+    function startChess() {
+      const chessIcons = { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘", P: "♙", k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
+      const board = ["r","n","b","q","k","b","n","r",
+        ...Array(8).fill("p"),
+        ...Array(32).fill(""),
+        ...Array(8).fill("P"),
+        "R","N","B","Q","K","B","N","R"];
+
+      const stateObj = {
+        board,
+        selected: null,
+        targets: [],
+        last: [],
+        enPassant: null,
+        castling: { K: true, Q: true, k: true, q: true }
+      };
+      window.chessState = stateObj;
+
+      function sideOf(piece) {
+        return piece ? (piece === piece.toUpperCase() ? "w" : "b") : null;
+      }
+
+      function inside(row, col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 8;
+      }
+
+      function pseudoMoves(boardArr, from, side) {
+        const piece = boardArr[from];
+        if (!piece) return [];
+        const type = piece.toLowerCase();
+        const row = Math.floor(from / 8);
+        const col = from % 8;
+        const moves = [];
+        const addMove = (to) => {
+          const target = boardArr[to];
+          if (target && target.toLowerCase() === "k") return;
+          if (!target || sideOf(target) !== side) moves.push({ from, to, capture: target || "" });
+        };
+
+        if (type === "p") {
+          const step = side === "w" ? -1 : 1;
+          const startRow = side === "w" ? 6 : 1;
+          const nextRow = row + step;
+
+          if (inside(nextRow, col) && !boardArr[nextRow * 8 + col]) {
+            addMove(nextRow * 8 + col);
+            const twoRow = row + step * 2;
+            if (row === startRow && !boardArr[twoRow * 8 + col]) addMove(twoRow * 8 + col);
+          }
+
+          for (const dc of [-1, 1]) {
+            const r = row + step;
+            const c = col + dc;
+            if (inside(r, c)) {
+              const targetIndex = r * 8 + c;
+              const target = boardArr[targetIndex];
+              if (target && sideOf(target) !== side) addMove(targetIndex);
+              if (!target && targetIndex === stateObj.enPassant) {
+                moves.push({
+                  from,
+                  to: targetIndex,
+                  capture: side === "w" ? "p" : "P",
+                  enPassant: true,
+                  captureIndex: targetIndex + (side === "w" ? 8 : -8)
+                });
+              }
+            }
+          }
+        }
+
+        if (type === "n") {
+          const offsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+          offsets.forEach(([dr, dc]) => {
+            const r = row + dr;
+            const c = col + dc;
+            if (inside(r, c)) addMove(r * 8 + c);
+          });
+        }
+
+        if (type === "k") {
+          for (let dr = -1; dr <= 1; dr += 1) {
+            for (let dc = -1; dc <= 1; dc += 1) {
+              if (dr === 0 && dc === 0) continue;
+              const r = row + dr;
+              const c = col + dc;
+              if (inside(r, c)) addMove(r * 8 + c);
+            }
+          }
+
+          const homeRow = side === "w" ? 7 : 0;
+          const opponent = side === "w" ? "b" : "w";
+          if (row === homeRow && col === 4 && !isSquareAttacked(boardArr, from, opponent)) {
+            const kingSide = side === "w" ? "K" : "k";
+            if (stateObj.castling[kingSide] && !boardArr[homeRow * 8 + 5] && !boardArr[homeRow * 8 + 6] &&
+                !isSquareAttacked(boardArr, homeRow * 8 + 5, opponent) && !isSquareAttacked(boardArr, homeRow * 8 + 6, opponent)) {
+              moves.push({ from, to: homeRow * 8 + 6, capture: "", castle: "king" });
+            }
+            const queenSide = side === "w" ? "Q" : "q";
+            if (stateObj.castling[queenSide] && !boardArr[homeRow * 8 + 1] && !boardArr[homeRow * 8 + 2] && !boardArr[homeRow * 8 + 3] &&
+                !isSquareAttacked(boardArr, homeRow * 8 + 3, opponent) && !isSquareAttacked(boardArr, homeRow * 8 + 2, opponent)) {
+              moves.push({ from, to: homeRow * 8 + 2, capture: "", castle: "queen" });
+            }
+          }
+        }
+
+        if (["b", "r", "q"].includes(type)) {
+          const directions = type === "b" ? [[1,1],[1,-1],[-1,1],[-1,-1]] : type === "r" ? [[1,0],[-1,0],[0,1],[0,-1]] : [[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+          directions.forEach(([dr, dc]) => {
+            let r = row + dr;
+            let c = col + dc;
+            while (inside(r, c)) {
+              const to = r * 8 + c;
+              const target = boardArr[to];
+              if (!target) moves.push({ from, to, capture: "" });
+              else {
+                if (sideOf(target) !== side && target.toLowerCase() !== "k") moves.push({ from, to, capture: target });
+                break;
+              }
+              r += dr;
+              c += dc;
+            }
+          });
+        }
+
+        return moves;
+      }
+
+      function boardAfterMove(boardArr, move) {
+        const next = [...boardArr];
+        const piece = next[move.from];
+        next[move.to] = piece;
+        next[move.from] = "";
+
+        if (move.enPassant) next[move.captureIndex] = "";
+        if (move.castle === "king") {
+          const row = Math.floor(move.from / 8);
+          next[row * 8 + 5] = next[row * 8 + 7];
+          next[row * 8 + 7] = "";
+        }
+        if (move.castle === "queen") {
+          const row = Math.floor(move.from / 8);
+          next[row * 8 + 3] = next[row * 8];
+          next[row * 8] = "";
+        }
+
+        const row = Math.floor(move.to / 8);
+        if (piece === "P" && row === 0) next[move.to] = "Q";
+        if (piece === "p" && row === 7) next[move.to] = "q";
+        return next;
+      }
+
+      function applyMove(move) {
+        const previousBoard = stateObj.board;
+        const piece = previousBoard[move.from];
+        const captured = move.enPassant ? previousBoard[move.captureIndex] : previousBoard[move.to];
+
+        stateObj.board = boardAfterMove(previousBoard, move);
+        stateObj.enPassant = piece?.toLowerCase() === "p" && Math.abs(move.to - move.from) === 16
+          ? (move.to + move.from) / 2
+          : null;
+
+        if (piece === "K") {
+          stateObj.castling.K = false;
+          stateObj.castling.Q = false;
+        }
+        if (piece === "k") {
+          stateObj.castling.k = false;
+          stateObj.castling.q = false;
+        }
+        if (move.from === 63 || move.to === 63 || captured === "R") stateObj.castling.K = false;
+        if (move.from === 56 || move.to === 56 || captured === "R") stateObj.castling.Q = false;
+        if (move.from === 7 || move.to === 7 || captured === "r") stateObj.castling.k = false;
+        if (move.from === 0 || move.to === 0 || captured === "r") stateObj.castling.q = false;
+      }
+
+      function isSquareAttacked(boardArr, square, bySide) {
+        const row = Math.floor(square / 8);
+        const col = square % 8;
+
+        const pawnRow = row + (bySide === "w" ? 1 : -1);
+        for (const dc of [-1, 1]) {
+          const attackRow = pawnRow;
+          const attackCol = col + dc;
+          if (inside(attackRow, attackCol) && boardArr[attackRow * 8 + attackCol] === (bySide === "w" ? "P" : "p")) {
+            return true;
+          }
+        }
+
+        const knightMoves = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+        for (const [dr, dc] of knightMoves) {
+          const r = row + dr;
+          const c = col + dc;
+          if (inside(r, c) && boardArr[r * 8 + c] && sideOf(boardArr[r * 8 + c]) === bySide && boardArr[r * 8 + c].toLowerCase() === "n") {
+            return true;
+          }
+        }
+
+        for (let dr = -1; dr <= 1; dr += 1) {
+          for (let dc = -1; dc <= 1; dc += 1) {
+            if (dr === 0 && dc === 0) continue;
+            const r = row + dr;
+            const c = col + dc;
+            if (inside(r, c) && boardArr[r * 8 + c] && sideOf(boardArr[r * 8 + c]) === bySide && boardArr[r * 8 + c].toLowerCase() === "k") {
+              return true;
+            }
+          }
+        }
+
+        const rayDirections = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+        for (const [dr, dc] of rayDirections) {
+          let r = row + dr;
+          let c = col + dc;
+          while (inside(r, c)) {
+            const piece = boardArr[r * 8 + c];
+            if (piece) {
+              if (sideOf(piece) === bySide && ["r", "b", "q"].includes(piece.toLowerCase())) {
+                return true;
+              }
+              break;
+            }
+            r += dr;
+            c += dc;
+          }
+        }
+
+        return false;
+      }
+
+      function isInCheck(boardArr, side) {
+        const king = side === "w" ? "K" : "k";
+        const square = boardArr.indexOf(king);
+        return square === -1 || isSquareAttacked(boardArr, square, side === "w" ? "b" : "w");
+      }
+
+      function legalMovesFor(side) {
+        const legal = [];
+        stateObj.board.forEach((piece, index) => {
+          if (sideOf(piece) !== side) return;
+          pseudoMoves(stateObj.board, index, side).forEach(move => {
+            if (!isInCheck(boardAfterMove(stateObj.board, move), side)) {
+              legal.push(move);
+            }
+          });
+        });
+        return legal;
+      }
+
+      function moveValue(piece) {
+        return { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 }[piece?.toLowerCase()] || 0;
+      }
+
+      function chooseBotMove(moves) {
+        const level = getLevel("chess");
+        const scored = moves.map(move => {
+          const next = boardAfterMove(stateObj.board, move);
+          const movedPiece = stateObj.board[move.from];
+          const givesCheck = isInCheck(next, "w");
+          const promotion = movedPiece.toLowerCase() === "p" && Math.floor(move.to / 8) === 7;
+          const score = moveValue(move.capture) + (givesCheck ? 180 : 0) + (promotion ? 850 : 0);
+          return { move, score };
+        }).sort((a, b) => b.score - a.score);
+
+        const topCount = level >= 8 ? 1 : level >= 4 ? Math.min(3, scored.length) : Math.min(6, scored.length);
+        const pool = scored.slice(0, topCount);
+        return pool[Math.floor(Math.random() * pool.length)].move;
+      }
+
+      function finishIfGameOver(sideToMove) {
+        const legal = legalMovesFor(sideToMove);
+        if (legal.length) return false;
+
+        if (isInCheck(stateObj.board, sideToMove)) {
+          if (sideToMove === "b") {
+            finishGame("Chess", 150 + getLevel(), "Checkmate! You defeated the bot.");
+          } else {
+            finishGame("Chess", 20, "Checkmate! The bot defeated you.", false);
+          }
+        } else {
+          finishGame("Chess", 80, "Stalemate. Neither side can move.", false);
+        }
+        return true;
+      }
+
+      function renderChess() {
+        $("gameContent").innerHTML = gameHeader("♟️", "Chess vs Bot", "You play white. Bot plays black.") +
+          `<div style="display:grid;grid-template-columns:repeat(8,minmax(30px,64px));width:min(100%,512px);margin:24px auto 12px;border:5px solid #514477;border-radius:10px;overflow:hidden;">${stateObj.board.map((piece, index) => {
+            const dark = (Math.floor(index / 8) + index % 8) % 2 === 1;
+            const selected = stateObj.selected === index;
+            const target = stateObj.targets.includes(index);
+            const isLastMove = stateObj.last.includes(index);
+            const background = target ? "#35d58a" : dark ? "#795d82" : "#e7d7b1";
+            return `<button data-square="${index}" style="aspect-ratio:1;border:0;padding:0;background:${background};color:#20213b;font-size:clamp(22px,6vw,43px);${selected ? "outline:4px solid #4db8ff;outline-offset:-4px;" : ""}${isLastMove ? "box-shadow:inset 0 0 0 4px rgba(255,255,255,.45);" : ""}">${chessIcons[piece] || ""}</button>`;
+          }).join("")}</div>
+          <div class="message">Your move</div>`;
+
+        document.querySelectorAll("[data-square]").forEach(square => {
+          square.onclick = () => {
+            const index = Number(square.dataset.square);
+            const piece = stateObj.board[index];
+            if (stateObj.selected === null) {
+              if (sideOf(piece) !== "w") return;
+              stateObj.selected = index;
+              const legal = legalMovesFor("w").filter(move => move.from === index);
+              stateObj.targets = legal.map(move => move.to);
+              renderChess();
+              return;
+            }
+
+            const legal = legalMovesFor("w");
+            const move = legal.find(candidate => candidate.from === stateObj.selected && candidate.to === index);
+            if (!move) {
+              stateObj.selected = null;
+              stateObj.targets = [];
+              renderChess();
+              return;
+            }
+
+            applyMove(move);
+            stateObj.last = [move.from, move.to];
+            stateObj.selected = null;
+            stateObj.targets = [];
+
+            if (finishIfGameOver("b")) return;
+
+            renderChess();
+            later(() => {
+              const botLegal = legalMovesFor("b");
+              const botMove = chooseBotMove(botLegal);
+              applyMove(botMove);
+              stateObj.last = [botMove.from, botMove.to];
+              if (finishIfGameOver("w")) return;
+              renderChess();
+            }, 420);
+          };
+        });
+      }
+
+      renderChess();
+    }
+
+    $("backButton").addEventListener("click", goHome);
+    renderGames();
+    saveStats();
+  </script>
+</body>
+</html>
